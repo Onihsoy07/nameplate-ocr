@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: nameplate-ocr
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      resolve-lazily: true
+
+
+server:
+  error:
+    whitelabel:
+      enabled: false
+
+
+file:
+  dir: C:/model/result/
+  tess-data: C:/model/tessdata

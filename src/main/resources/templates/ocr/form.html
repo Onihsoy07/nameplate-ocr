@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="kr"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>OCR 테스트</title>
+</head>
+<body>
+    <div style="display:flex">
+        <div style="margin:100px auto">
+            <form action="/api/ocr" method="post" enctype="multipart/form-data">
+                <div>이미지 파일을 넣으세요.</div>
+
+                <input type="file" id="image" name="image" accept="image/*" />
+
+                <div>
+                    <button type="submit">제출</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
