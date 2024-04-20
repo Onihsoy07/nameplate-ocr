@@ -6,6 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import java.awt.image.DataBufferByte;
+
+import org.opencv.highgui.HighGui;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,12 +47,15 @@ public class OcrService {
         String storeFileName = createStoreFileName(originalFilename);
         String fileFullPath = getFullPath(storeFileName);
         File originalImageFile = new File(fileFullPath);
+        String imagePretreatmentFullPath = getImagePretreatmentFullPath(originalFilename);
 
         // multipartFile을 storeFileName으로 저장
         multipartFile.transferTo(originalImageFile);
 
         // 이미지 전처리 후 파일 반환
-        File imagePretreatmentFile = getImagePretreatmentFile(originalImageFile);
+        getConvertImageGrayScale(originalImageFile, imagePretreatmentFullPath);
+        File imagePretreatmentFile = new File(imagePretreatmentFullPath);
+//        File imagePretreatmentFile = getImagePretreatmentFile(originalImageFile);
 
 
         // Tesseract 객체 생성
@@ -95,10 +106,23 @@ public class OcrService {
     }
 
     // 이미지 그레이 스케일 변환
-    private File getConvertImageGrayScale(File file) {
+    private void getConvertImageGrayScale(File file, String imagePretreatmentFilePath) throws IOException {
+//        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
+//        Mat imageLenna = Imgcodecs.imread(originalFilePath);
+
+        BufferedImage image = ImageIO.read(file);
+
+        byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+        Mat imageLenna = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC3);
+        imageLenna.put(0, 0, data);
+
+
+        // GrayScale
+        Imgproc.cvtColor(imageLenna, imageLenna, Imgproc.COLOR_BayerRG2GRAY);
+
+        Imgcodecs.imwrite(imagePretreatmentFilePath, imageLenna);
     }
-
 
     // 이미지 전처리(노이즈 제거)
     private void ImageProcess(BufferedImage Input_Image, float scaleFactor, float offset,
