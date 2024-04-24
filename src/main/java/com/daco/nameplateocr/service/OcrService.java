@@ -1,11 +1,13 @@
 package com.daco.nameplateocr.service;
 
+import com.daco.nameplateocr.dto.ItemDataDto;
 import com.daco.nameplateocr.dto.OcrDto;
 import com.daco.nameplateocr.exception.NotAttachMultipartFileException;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,8 +16,18 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
+
+
+/**
+if (folder.exists()) {
+    FileUtils.cleanDirectory(folder);//하위 폴더와 파일 모두 삭제
+}
+ */
 
 @Slf4j
 @Service
@@ -28,7 +40,7 @@ public class OcrService {
     private String TESSDATA;
 
 
-    public OcrDto getReadForImageText(MultipartFile multipartFile) throws IOException, TesseractException {
+    public OcrDto getReadForImageText(MultipartFile multipartFile, ItemDataDto itemDataDto) throws IOException, TesseractException {
         if (multipartFile.isEmpty()) {
             throw new NotAttachMultipartFileException("파일이 존재하지 않습니다");
         }
@@ -41,7 +53,13 @@ public class OcrService {
         String imagePretreatmentFullPath = getImagePretreatmentFullPath(storeFileName);
 
         // multipartFile을 storeFileName으로 저장
-        multipartFile.transferTo(originalImageFile);
+        // 사진 저장할 디렉토리 없으면 만들어서 저장
+        try {
+            multipartFile.transferTo(originalImageFile);
+        } catch (IOException e) {
+            Files.createDirectories(getFileDirectory(originalImageFile));
+            multipartFile.transferTo(originalImageFile);
+        }
 
         // 이미지 전처리 후 파일 반환
         getConvertImageGrayScale(originalImageFile, imagePretreatmentFullPath, extractedExt(imagePretreatmentFullPath));
@@ -109,7 +127,23 @@ public class OcrService {
             }
         }
 
-        ImageIO.write(image, ext, new File(imagePretreatmentFilePath));
+        File imagePretreatmentFile = new File(imagePretreatmentFilePath);
+
+        // 사진 저장할 디렉토리 없으면 만들어서 저장
+        try {
+            ImageIO.write(image, ext, imagePretreatmentFile);
+        } catch (FileNotFoundException e) {
+            Files.createDirectories(getFileDirectory(imagePretreatmentFile));
+            ImageIO.write(image, ext, imagePretreatmentFile);
+        }
+
+    }
+
+    // 파일의 디렉토리 반환
+    private Path getFileDirectory(File file) {
+        String parentPath = file.getParent();
+
+        return Path.of(parentPath);
     }
 
 }
