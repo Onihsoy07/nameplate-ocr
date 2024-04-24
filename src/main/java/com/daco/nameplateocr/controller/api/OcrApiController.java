@@ -1,18 +1,17 @@
 package com.daco.nameplateocr.controller.api;
 
+import com.daco.nameplateocr.dto.ItemDataDto;
 import com.daco.nameplateocr.dto.OcrDto;
 import com.daco.nameplateocr.exception.NotAttachMultipartFileException;
 import com.daco.nameplateocr.service.OcrService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -23,11 +22,12 @@ public class OcrApiController {
     private final OcrService ocrService;
 
     @PostMapping
-    public OcrDto getReadForImageText(@RequestParam("image") MultipartFile multipartFile) {
+    public OcrDto getReadForImageText(@RequestParam("image") final MultipartFile multipartFile,
+                                      @RequestBody final ItemDataDto itemDataDto) {
         OcrDto ocrDto = null;
 
         try {
-            ocrDto = ocrService.getReadForImageText(multipartFile);
+            ocrDto = ocrService.getReadForImageText(multipartFile, itemDataDto);
         } catch (IOException | NotAttachMultipartFileException | TesseractException e) {
             log.info("OcrApiController getReadForImageText 에러 발생", e);
         }

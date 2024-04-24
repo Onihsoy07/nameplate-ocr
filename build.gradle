@@ -21,9 +21,13 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	// https://mvnrepository.com/artifact/net.sourceforge.tess4j/tess4j
 	implementation 'net.sourceforge.tess4j:tess4j:5.11.0'
+
+
+
 
 }
 
