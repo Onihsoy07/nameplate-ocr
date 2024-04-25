@@ -3,7 +3,6 @@ package com.daco.nameplateocr.service;
 import com.daco.nameplateocr.dto.ItemDataDto;
 import com.daco.nameplateocr.dto.OcrDto;
 import com.daco.nameplateocr.dto.enumerate.OKorNG;
-import com.daco.nameplateocr.exception.NotAttachMultipartFileException;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
@@ -13,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -77,19 +77,36 @@ public class OcrService {
         // OCR 작업 후 결과 반환
         String ocrResult = tesseract.doOCR(imagePretreatmentFile);
 
+        // 파일 이름의 날짜 시간 및 request로 온 라인 이름으로 경로 반환
+        String imageSaveDirectory = addDaysAndLineNameToPath(storeFileName, itemDataDto.getLineName());
+
+        // 명판 OCR 결과 확인 및 저장
+        OKorNG ocrCheckResult = checkNamePlate(ocrResult, itemDataDto.getCorrectData());
+
+        // 최종 저장(날짜, 라인, 합불 폴더 분류됨)
+        saveCheckImage(imageSaveDirectory, ocrCheckResult, storeFileName, originalImageFile);
+
         // 저장한 이미지 파일 이름, 파일 경로, OCR 결과를 DTO로 반환
-        return new OcrDto(ocrResult, OKorNG.OK);
+        return new OcrDto(ocrResult, ocrCheckResult);
     }
 
 
     // 원본 이미지 저장 위치 반환
     private String getFullPath(String fileName) {
-        return FILEDIR + "original/" + fileName;
+        return FILEDIR + "temp/original/" + fileName;
     }
 
     // 전처리 이미지 저장 위치 반환
     private String getImagePretreatmentFullPath(String fileName) {
-        return FILEDIR + "imagePretreatment/" + fileName;
+        return FILEDIR + "temp/imagePretreatment/" + fileName;
+    }
+
+    // 현재 경로에 날짜 및 라인 디렉토리 추가하여 반환
+    private String addDaysAndLineNameToPath(String fileName, String lineName) {
+        String year = fileName.substring(0, 4) + "년";
+        String month = fileName.substring(5, 7) + "월";
+        String day = fileName.substring(8, 10) + "일";
+        return FILEDIR + year + "/" + month + "/" + day + "/" + lineName;
     }
 
     // 기존 파일 이름 + UUID
@@ -131,7 +148,7 @@ public class OcrService {
         // 사진 저장할 디렉토리 없으면 만들어서 저장
         try {
             ImageIO.write(image, ext, imagePretreatmentFile);
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException | IIOException e) {
             Files.createDirectories(getFileDirectory(imagePretreatmentFile));
             ImageIO.write(image, ext, imagePretreatmentFile);
         }
@@ -143,6 +160,45 @@ public class OcrService {
         String parentPath = file.getParent();
 
         return Path.of(parentPath);
+    }
+
+    // 명판 OCR 결과 확인 (합불 판정)
+    private OKorNG checkNamePlate(String text, String correctData) {
+        // ','를 기준으로 문자열 나눔
+        String[] checkDataArray = correctData.split(",");
+        Boolean checkResult = true;
+
+        // checkDataArray의 모든 문자열이 OCR 결과에 포함되었는지 확인
+        for (String checkData : checkDataArray) {
+            if (!text.contains(checkData)) {
+                checkResult = false;
+                break;
+            }
+        }
+
+        /**
+         * 명판 OCR에 모든 데이터가 포함됨 : OK 반환
+         * 명판 OCR에 모든 데이터가 포함되지 않음 : NG 반환
+         */
+        return checkResult ? OKorNG.OK : OKorNG.NG;
+    }
+
+    // 최종 결과 저장
+    private void saveCheckImage(String imageSaveDirectory, OKorNG checkResult,
+                                String storeFileName, File originalFile) {
+        // 최종 저장할 파일 경로 지정
+        String finalFilePath = imageSaveDirectory + "/" + checkResult.toString() + "/" + storeFileName;
+
+        // 최종 저장할 파일 생성
+        File finalFile = new File(finalFilePath);
+
+        // 최종 파일 저장
+        try {
+            FileUtils.moveFile(originalFile, finalFile);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
