@@ -1,5 +1,6 @@
 package com.daco.nameplateocr.controller.api;
 
+import com.daco.nameplateocr.dto.HttpRequestDto;
 import com.daco.nameplateocr.dto.ItemDataDto;
 import com.daco.nameplateocr.dto.OcrDto;
 import com.daco.nameplateocr.exception.NotAttachMultipartFileException;
@@ -7,6 +8,9 @@ import com.daco.nameplateocr.service.OcrService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,63 +25,32 @@ public class OcrApiController {
 
     private final OcrService ocrService;
 
+    /**
+     * HTTP POST 요청 처리
+     * url -> /api/ocr
+     * 필요한 요청 데이터 -> MultipartFile(이미지 파일), String(라인 이름), String(양품 판정에 필요한 데이터)
+     */
     @PostMapping
-    public OcrDto getReadForImageText(@RequestParam("image") final MultipartFile multipartFile,
-                                      @RequestBody final ItemDataDto itemDataDto) {
+    public HttpRequestDto<OcrDto> getReadForImageText(final ItemDataDto itemDataDto,
+                                                      BindingResult bindingResult) {
         OcrDto ocrDto = null;
 
+        // 필요한 요청 데이터 없을 시 에러 메시지 담아서 반환
+        if (bindingResult.hasErrors()) {
+            String message = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            log.info(message);
+            return new HttpRequestDto<>(HttpStatus.BAD_REQUEST.value(), false, message, null);
+        }
+
+        // OCR 주요 로직 실행
         try {
-            ocrDto = ocrService.getReadForImageText(multipartFile, itemDataDto);
+            ocrDto = ocrService.getReadForImageText(itemDataDto);
         } catch (IOException | NotAttachMultipartFileException | TesseractException e) {
             log.info("OcrApiController getReadForImageText 에러 발생", e);
         }
 
-        return ocrDto;
+        // OCR 결과 데이터 담아 반환
+        return new HttpRequestDto<>(HttpStatus.OK.value(), true, "OCR 성공", ocrDto);
     }
-
-
-//    @PostMapping("/api/ocr")
-//    public String DoOCR(@RequestParam("DestinationLanguage") String destinationLanguage,
-//                        @RequestParam("Image") MultipartFile image) throws IOException {
-//
-//
-//        OcrModel request = new OcrModel();
-//        request.setDestinationLanguage(destinationLanguage);
-//        request.setImage(image);
-//
-//        ITesseract instance = new Tesseract();
-//
-//        try {
-//
-//            BufferedImage in = ImageIO.read(convert(image));
-//
-//            BufferedImage newImage = new BufferedImage(in.getWidth(), in.getHeight(), BufferedImage.TYPE_INT_ARGB);
-//
-//            Graphics2D g = newImage.createGraphics();
-//            g.drawImage(in, 0, 0, null);
-//            g.dispose();
-//
-//            instance.setLanguage(request.getDestinationLanguage());
-//            instance.setDatapath("..//tessdata");
-//
-//            String result = instance.doOCR(newImage);
-//
-//            return result;
-//
-//        } catch (TesseractException | IOException e) {
-//            System.err.println(e.getMessage());
-//            return "Error while reading image";
-//        }
-//
-//    }
-//
-//    public static File convert(MultipartFile file) throws IOException {
-//        File convFile = new File(file.getOriginalFilename());
-//        convFile.createNewFile();
-//        FileOutputStream fos = new FileOutputStream(convFile);
-//        fos.write(file.getBytes());
-//        fos.close();
-//        return convFile;
-//    }
 
 }
