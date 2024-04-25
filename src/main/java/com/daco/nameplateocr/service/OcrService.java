@@ -78,7 +78,7 @@ public class OcrService {
         String ocrResult = tesseract.doOCR(imagePretreatmentFile);
 
         // 파일 이름의 날짜 시간 및 request로 온 라인 이름으로 경로 반환
-        String imageSaveDirectory = addDaysAndLineNameToPath(storeFileName, itemDataDto.getLineName());
+        String imageSaveDirectory = addDaysAndLineNameToPath(storeFileName, itemDataDto.getLineName(), itemDataDto.getCorrectData());
 
         // 명판 OCR 결과 확인 및 저장
         OKorNG ocrCheckResult = checkNamePlate(ocrResult, itemDataDto.getCorrectData());
@@ -102,11 +102,11 @@ public class OcrService {
     }
 
     // 현재 경로에 날짜 및 라인 디렉토리 추가하여 반환
-    private String addDaysAndLineNameToPath(String fileName, String lineName) {
+    private String addDaysAndLineNameToPath(String fileName, String lineName, String correctData) {
         String year = fileName.substring(0, 4) + "년";
         String month = fileName.substring(5, 7) + "월";
         String day = fileName.substring(8, 10) + "일";
-        return FILEDIR + year + "/" + month + "/" + day + "/" + lineName;
+        return FILEDIR + year + "/" + month + "/" + day + "/" + lineName + "/" + correctData;
     }
 
     // 기존 파일 이름 + UUID
