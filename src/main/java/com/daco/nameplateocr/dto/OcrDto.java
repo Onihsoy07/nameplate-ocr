@@ -1,5 +1,6 @@
 package com.daco.nameplateocr.dto;
 
+import com.daco.nameplateocr.dto.enumerate.OKorNG;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,10 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OcrDto {
 
-    private String fileName;
+    // OCR 결과
+    private String text;
 
-    private String filePath;
-
-    private String result;
+    // 합불 판정 결과(OK or NG)
+    private OKorNG result;
 
 }

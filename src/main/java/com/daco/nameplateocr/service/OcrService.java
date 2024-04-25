@@ -2,6 +2,7 @@ package com.daco.nameplateocr.service;
 
 import com.daco.nameplateocr.dto.ItemDataDto;
 import com.daco.nameplateocr.dto.OcrDto;
+import com.daco.nameplateocr.dto.enumerate.OKorNG;
 import com.daco.nameplateocr.exception.NotAttachMultipartFileException;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.ITesseract;
@@ -40,10 +41,8 @@ public class OcrService {
     private String TESSDATA;
 
 
-    public OcrDto getReadForImageText(MultipartFile multipartFile, ItemDataDto itemDataDto) throws IOException, TesseractException {
-        if (multipartFile.isEmpty()) {
-            throw new NotAttachMultipartFileException("파일이 존재하지 않습니다");
-        }
+    public OcrDto getReadForImageText(ItemDataDto itemDataDto) throws IOException, TesseractException {
+        MultipartFile multipartFile = itemDataDto.getImage();
 
         // multipartFile에서 originalFilename를 받아 고유 이름으로 변경 및 저장할 파일 경로
         String originalFilename = multipartFile.getOriginalFilename();
@@ -76,10 +75,10 @@ public class OcrService {
         tesseract.setLanguage("eng+kor");
 
         // OCR 작업 후 결과 반환
-        String result = tesseract.doOCR(imagePretreatmentFile);
+        String ocrResult = tesseract.doOCR(imagePretreatmentFile);
 
         // 저장한 이미지 파일 이름, 파일 경로, OCR 결과를 DTO로 반환
-        return new OcrDto(storeFileName, fileFullPath, result);
+        return new OcrDto(ocrResult, OKorNG.OK);
     }
 
 
@@ -139,7 +138,7 @@ public class OcrService {
 
     }
 
-    // 파일의 디렉토리 반환
+    // 현재 파일의 디렉토리 반환
     private Path getFileDirectory(File file) {
         String parentPath = file.getParent();
 
