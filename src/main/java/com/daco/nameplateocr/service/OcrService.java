@@ -24,12 +24,6 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 
-/**
-if (folder.exists()) {
-    FileUtils.cleanDirectory(folder);//하위 폴더와 파일 모두 삭제
-}
- */
-
 @Slf4j
 @Service
 public class OcrService {
