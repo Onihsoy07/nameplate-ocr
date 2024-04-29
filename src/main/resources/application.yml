@@ -2,6 +2,18 @@ spring:
   application:
     name: nameplate-ocr
 
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/nameplate_ocr?serverTimezone=Asia/Seoul
+    username: root
+    password: 0880
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+      jdbc:
+        time_zone: Asia/Seoul
+
   servlet:
     multipart:
       max-file-size: 100MB
@@ -18,3 +30,21 @@ server:
 file:
   dir: C:/model/result/
   tess-data: C:/model/tessdata
+
+
+logging:
+  level:
+    org:
+      springframework:
+        transaction:
+          interceptor: TRACE
+        orm:
+          jpa:
+            JpaTransactionManager: DEBUG
+
+      hibernate:
+        #JPA log
+        resource:
+          transaction: DEBUG
+        #JPA SQL
+        SQL: DEBUG
