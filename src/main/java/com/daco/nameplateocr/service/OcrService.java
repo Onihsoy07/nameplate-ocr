@@ -3,6 +3,9 @@ package com.daco.nameplateocr.service;
 import com.daco.nameplateocr.dto.ItemDataDto;
 import com.daco.nameplateocr.dto.OcrDto;
 import com.daco.nameplateocr.dto.enumerate.OKorNG;
+import com.daco.nameplateocr.entity.NameplateOcrData;
+import com.daco.nameplateocr.repository.NameplateOcrDataRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
@@ -21,12 +24,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class OcrService {
+
+    private final NameplateOcrDataService nameplateOcrDataService;
 
     @Value("${file.dir}")
     private String FILEDIR;
@@ -78,7 +85,10 @@ public class OcrService {
         OKorNG ocrCheckResult = checkNamePlate(ocrResult, itemDataDto.getCorrectData());
 
         // 최종 저장(날짜, 라인, 합불 폴더 분류됨)
-        saveCheckImage(imageSaveDirectory, ocrCheckResult, storeFileName, originalImageFile);
+        String finalImageSavePath = saveCheckImage(imageSaveDirectory, ocrCheckResult, storeFileName, originalImageFile);
+
+        // 명판 ocr 데이터 데이터베이스에 저장
+        nameplateOcrDataService.save(itemDataDto, ocrResult, ocrCheckResult, finalImageSavePath);
 
         // 저장한 이미지 파일 이름, 파일 경로, OCR 결과를 DTO로 반환
         return new OcrDto(ocrResult, ocrCheckResult);
@@ -178,7 +188,8 @@ public class OcrService {
     }
 
     // 최종 결과 저장
-    private void saveCheckImage(String imageSaveDirectory, OKorNG checkResult,
+    // 최종 결과 저장 파일 위치 반환
+    private String saveCheckImage(String imageSaveDirectory, OKorNG checkResult,
                                 String storeFileName, File originalFile) {
         // 최종 저장할 파일 경로 지정
         String finalFilePath = imageSaveDirectory + "/" + checkResult.toString() + "/" + storeFileName;
@@ -189,10 +200,11 @@ public class OcrService {
         // 최종 파일 저장
         try {
             FileUtils.moveFile(originalFile, finalFile);
+        } catch (Exception e) {
+            log.info("saveCheckImage FileUtils.moveFile(originalFile, finalFile)에서 에러 발생", e);
         }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        return finalFilePath;
     }
 
 }
