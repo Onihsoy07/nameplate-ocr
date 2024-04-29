@@ -22,7 +22,7 @@ public class NameplateOcrData {
     @Column(nullable = false, unique = false)
     private String lineName;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     private String correctData;
 
     @Column(nullable = false, unique = false)
