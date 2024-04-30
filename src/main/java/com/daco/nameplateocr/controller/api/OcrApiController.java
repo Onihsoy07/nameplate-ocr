@@ -68,11 +68,11 @@ public class OcrApiController {
      *                    String checkResult(검색할 합불 판정, 필수 아님)
      */
     @GetMapping
-    public HttpRequestDto<List<NameplateOcrDataDto>> searchOcrData(@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd_HH:mm:ss") LocalDateTime startDate,
-                                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd_HH:mm:ss") LocalDateTime endDate,
-                                                                   @RequestParam(required = false) String lineName,
-                                                                   @RequestParam(required = false) String correctData,
-                                                                   @RequestParam(required = false) String checkResult) {
+    public HttpRequestDto<List<NameplateOcrDataDto>> searchOcrData(@RequestParam(required = false, name = "startDate") @DateTimeFormat(pattern = "yyyy-MM-dd_HH:mm:ss") LocalDateTime startDate,
+                                                                   @RequestParam(required = false, name = "endDate") @DateTimeFormat(pattern = "yyyy-MM-dd_HH:mm:ss") LocalDateTime endDate,
+                                                                   @RequestParam(required = false, name = "lineName") String lineName,
+                                                                   @RequestParam(required = false, name = "correctData") String correctData,
+                                                                   @RequestParam(required = false, name = "checkResult") String checkResult) {
         List<NameplateOcrDataDto> nameplateOcrDataDtoList = nameplateOcrDataService.searchResultData(startDate, endDate, lineName, correctData, checkResult);
 
         return new HttpRequestDto<>(HttpStatus.OK.value(), true, "검색 성공", nameplateOcrDataDtoList);

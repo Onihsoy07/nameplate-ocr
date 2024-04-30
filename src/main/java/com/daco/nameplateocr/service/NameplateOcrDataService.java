@@ -42,7 +42,7 @@ public class NameplateOcrDataService {
                 .ocrResultText(ocrResult)
                 .checkResult(checkResult)
                 .imagePath(finalImageSavePath)
-                .imageCreateDate(LocalDateTime.now())
+                .imageCreateDate(dateTime)
                 .build();
 
         nameplateOcrDataRepository.save(nameplateOcrData);
