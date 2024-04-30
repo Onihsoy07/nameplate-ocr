@@ -54,10 +54,7 @@ const getOcrResult = () => {
             'Content-Type': 'application/json'
         }
     }).then((res) => {
-        console.log(res);
         if (res.data.success) {
-            console.log(res);
-
             data.lineName = res.data.data.lineName;
             data.correctData = res.data.data.correctData;
             data.checkResult = res.data.data.checkResult;
