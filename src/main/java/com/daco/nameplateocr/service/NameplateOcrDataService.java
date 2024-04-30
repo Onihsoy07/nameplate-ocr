@@ -10,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileCopyUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -53,6 +56,27 @@ public class NameplateOcrDataService {
         List<NameplateOcrDataDto> nameplateOcrDataDtoList = NameplateOcrDataDto.convertToDtoList(nameplateOcrDataList);
 
         return nameplateOcrDataDtoList;
+    }
+
+    // 명판 OCR 결과 데이터 확인(단건, 이미지 확인)
+    public NameplateOcrDataDto getResultData(Long id) throws IOException {
+        // id 맞는 Entity 반환
+        NameplateOcrData nameplateOcrData = getEntity(id);
+
+        // Entity -> Dto
+        NameplateOcrDataDto nameplateOcrDataDto = new NameplateOcrDataDto(nameplateOcrData);
+        // Dto의 이미지 스트림에 이미지 바이트 스트림 넣기
+        File file = new File(nameplateOcrData.getImagePath());
+        nameplateOcrDataDto.setImageStream(FileCopyUtils.copyToByteArray(file));
+
+        return nameplateOcrDataDto;
+    }
+
+    // id로 Entity 찾아 반환
+    private NameplateOcrData getEntity(Long id) {
+        return nameplateOcrDataRepository.findById(id).orElseThrow(() -> {
+            throw new IllegalArgumentException("NameplateOcrData ID " + id + "를 찾을 수 없습니다");
+        });
     }
 
 }

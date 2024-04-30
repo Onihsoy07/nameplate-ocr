@@ -12,10 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -78,6 +76,23 @@ public class OcrApiController {
         List<NameplateOcrDataDto> nameplateOcrDataDtoList = nameplateOcrDataService.searchResultData(startDate, endDate, lineName, correctData, checkResult);
 
         return new HttpRequestDto<>(HttpStatus.OK.value(), true, "검색 성공", nameplateOcrDataDtoList);
+    }
+
+    @GetMapping("/{id}")
+    public HttpRequestDto<NameplateOcrDataDto> getOcrResultData(@PathVariable("id") Long id) {
+        NameplateOcrDataDto nameplateOcrDataDto = null;
+
+        try {
+            nameplateOcrDataDto = nameplateOcrDataService.getResultData(id);
+        } catch (IOException e) {
+            log.info("OcrApiController - getOcrResultData", e);
+            return new HttpRequestDto<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), false, "이미지 스트림 변환 실패", null);
+        } catch (IllegalArgumentException e) {
+            log.info("OcrApiController - getOcrResultData", e);
+            return new HttpRequestDto<>(HttpStatus.BAD_REQUEST.value(), false, e.getMessage(), null);
+        }
+
+        return new HttpRequestDto<>(HttpStatus.OK.value(), true, "OCR 결과 조회 성공", nameplateOcrDataDto);
     }
 
 }
