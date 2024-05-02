@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="ocr-info-wrap">
         <h1>명판 OCR</h1>
         <div class="data-outer">
             <img class="original-image" :src="data.byteImage" alt="Image" />
@@ -31,10 +31,11 @@
 
 <script setup>
 import { onMounted, reactive } from 'vue';
-import { useRoute } from 'vue-router';
 import axios from 'axios';
+import { useRoute } from 'vue-router';
 
-const route = useRoute();
+
+const route = useRoute()
 const data = reactive({
     byteImage: '',
     lineName: '',
@@ -44,12 +45,18 @@ const data = reactive({
     imageCreateDate: '',
 
 });
+// const props = defineProps({
+//     ocrResultId: Number,
+
+// });
+
+
 
 // 경로의 id를 확인하여 OCR 결과 데이터 받기
 const getOcrResult = () => {
     axios({
         method: 'get',
-        url: '/api/ocr/' + route.params.ocrResultId,
+        url: '/api/ocr/' + route.params.ocrResultId, //props.ocrResultId,
         headers: {
             'Content-Type': 'application/json'
         }
@@ -102,5 +109,8 @@ onMounted(() => {
     display: inline-block;
     line-height: 25px;
     margin: 10px 0px;
+}
+.ocr-info-wrap {
+    margin: 20px 0px;
 }
 </style>

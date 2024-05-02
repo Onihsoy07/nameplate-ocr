@@ -16,7 +16,7 @@ const router = createRouter({
         },
         {
             path: "/ocr/:ocrResultId",
-            name: "ocr-result",
+            name: "ocr-info",
             component: () => import("@/components/OcrInfo.vue")
         },
 

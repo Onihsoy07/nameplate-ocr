@@ -17,4 +17,10 @@
   color: #2c3e50;
   margin-top: 60px;
 }
+.router-link {
+  all: unset;
+  color: black;
+  font-size: 16px;
+  height: 100%;
+}
 </style>

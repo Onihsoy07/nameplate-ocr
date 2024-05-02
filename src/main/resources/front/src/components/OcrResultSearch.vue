@@ -1,16 +1,38 @@
 <template>
-    <div>
-        <input type="date" v-model="data.startDate" />
-        <input type="date" v-model="data.endDate" />
-        <input type="text" v-model="data.lineName" />
-        <input type="text" v-model="data.correctData" />
+    <!-- <div v-if="data.detailOpen">
+        <div class="background-black" @click="modalClose()"></div>
+        <div class="modal-window">
+            <button @click="modalClose()" class="btn-close">X</button>
+            <OcrInfo :ocr-result-id="data.ocrResultId"></OcrInfo>
+        </div>
+    </div> -->
+
+    <div class="search-params">
+        <div>
+            <label for="startDate">시작 날짜 </label>
+            <input type="date" v-model="data.startDate" />
+        </div>
+        <div>
+            <label for="endDate">끝 날짜 </label>
+            <input type="date" v-model="data.endDate" />
+        </div>
+        <div>
+            <label for="lineName">라인 </label>
+            <input type="text" v-model="data.lineName" />
+        </div>
+        <div>
+            <label for="correctData">확인 정보 </label>
+            <input type="text" v-model="data.correctData" />
+        </div>
+        <label for="checkResult">합불 판정 </label>
         <select v-model="data.checkResult">
             <option value="">ALL</option>
             <option value="OK">OK</option>
             <option value="NG">NG</option>
         </select>
-
-        <button @click="ocrSearch()">검색</button>
+        <div>
+            <button @click="ocrSearch()">검색</button>
+        </div>
     </div>
     <div class="data-list-outer">
         <div class="data-list-inner">
@@ -43,6 +65,7 @@
 <script setup>
 import { reactive } from 'vue';
 import axios from 'axios';
+// import OcrInfo from './OcrInfo.vue';
 
 const data = reactive({
     startDate: '',
@@ -51,9 +74,12 @@ const data = reactive({
     correctData: '',
     checkResult: '',
     searchResult: {},
+    detailOpen: false,
+
 
 });
 
+// OCR 결과 데이터 검색
 const ocrSearch = () => {
     var searchParams = '';
 
@@ -93,12 +119,21 @@ const ocrSearch = () => {
     });
 };
 const detailView = (ocrResultId) => {
+    // console.log(ocrResultId);
+    // data.ocrResultId = ocrResultId;
+    // data.detailOpen = true;
     window.open('/ocr/' + ocrResultId, '_blank', 'width=900px,height=700px')
-}
+};
+// const modalClose = () => {
+//     data.detailOpen = false;
+// }
 
 </script>
 
 <style scoped>
+.search-params div {
+    margin: 7px 0px;
+}
 .data-list-outer {
     display: flex;
     margin-top: 30px;
@@ -139,5 +174,32 @@ const detailView = (ocrResultId) => {
 }
 .table-detail-view {
     width: 100px;
+}
+.background-black {
+    background-color: black;
+    opacity : 0.4;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+.modal-window {
+    position: fixed;
+    left: calc(50% - 300px);
+    top: 100px;
+    width: 600px;
+    height: 600px;
+    background-color: white;
+    overflow-y: auto;
+    z-index: 99;
+}
+.btn-close {
+    all: unset;
+    float: right;
+    padding: 15px 15px;
+    font-size: 20px;
+    cursor: pointer;
 }
 </style>
