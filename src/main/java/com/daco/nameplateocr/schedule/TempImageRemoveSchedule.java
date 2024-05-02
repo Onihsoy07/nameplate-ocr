@@ -17,6 +17,7 @@ public class TempImageRemoveSchedule {
     @Value("${file.dir}")
     private String FILEDIR;
 
+    // 매일 13시에 임시 파일 삭제
     @Scheduled(cron = "0 0 13 * * *", zone = "Asia/Seoul")
     public void tempImageRemoveInLunchTime() throws IOException {
         String tempPath = FILEDIR + "/temp";
